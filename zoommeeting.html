@@ -1,0 +1,92 @@
+in my application I have this
+
+	generatedSignature = generateZoomSignature(data)
+
+	context_dict['mtg_signature']=generatedSignature
+	context_dict['api_key']=Api_Key
+	context_dict['meeting_number']="obtained from meeting creation"
+	#this is the display name
+	context_dict['meeting_name']="Meeting name as desired"
+	context_dict['meeting_pwd']="obtained from meeting created"
+	context_dict['meeting_role']=1
+	context_dict['meeting_lang']="en-US" 
+	context_dict['meeting_date']="this contains meeting date obtained"
+	context_dict['email']="myregisteredmail@yahoo.com"
+	
+	generateZoomSignature(data):
+		ts = int(round(time.time() * 1000))-30000
+		msg = Api_Key + str(data['meeting_number']) + str(ts) + str(data['role'])
+		message = base64.b64encode(bytes(msg, 'utf-8'))
+		secret = bytes(Api_Secret, 'utf-8')
+		hash = hmac.new(secret, message, hashlib.sha256);
+		hash =  base64.b64encode(hash.digest());
+		hash = hash.decode("utf-8");
+		tmpString = "%s.%s.%s.%s.%s" % (Api_Key, str(data['meeting_number']), str(ts), str(data['role']), hash);
+		signature = base64.b64encode(bytes(tmpString, "utf-8"));
+		signature = signature.decode("utf-8");
+		
+		return signature.rstrip("=");
+		
+in my html I have this
+
+	
+	<script src="https://source.zoom.us/1.9.5/lib/vendor/react.min.js"></script>
+    <script src="https://source.zoom.us/1.9.5/lib/vendor/react-dom.min.js"></script>
+    <script src="https://source.zoom.us/1.9.5/lib/vendor/redux.min.js"></script>
+    <script src="https://source.zoom.us/1.9.5/lib/vendor/redux-thunk.min.js"></script>
+    <script src="https://source.zoom.us/1.9.5/lib/vendor/lodash.min.js"></script>
+    <script src="https://source.zoom.us/zoom-meeting-1.9.5.min.js"></script>
+	<script src="'zoomcdn/js/tool.js'"></script>
+    <script src="'zoomcdn/js/vconsole.min.js'"></script>
+	<script type="text/javascript">
+		window.addEventListener('DOMContentLoaded', function(event) {
+		//$(document).ready( function(event) {
+			var testTool = window.testTool;
+			zoomMtgJDKVersion = ZoomMtg.getJSSDKVersion()[0] +
+									testTool.detectOS() +"#" +testTool.getBrowserInfo();
+			console.log("checkSystemRequirements");
+			/*****/
+			console.log(JSON.stringify(ZoomMtg.checkSystemRequirements())); 
+			/****/
+		  
+		  // it's option if you want to change the WebSDK dependency link resources. setZoomJSLib must be run at first
+		  // if (!china) ZoomMtg.setZoomJSLib('https://source.zoom.us/1.9.1/lib', '/av'); // CDN version default
+		  // else ZoomMtg.setZoomJSLib('https://jssdk.zoomus.cn/1.9.1/lib', '/av'); // china cdn option
+		  // ZoomMtg.setZoomJSLib('http://localhost:9999/node_modules/@zoomus/websdk/dist/lib', '/av'); // Local version default, Angular Project change to use cdn version
+			
+			/****/
+			ZoomMtg.preLoadWasm(); // pre download wasm file to save time.
+			ZoomMtg.prepareJssdk();
+			/****/
+		var meetingCon = {
+			mn:{{meeting_number}},//coming from server
+			name:testTool.b64EncodeUnicode("{{meeting_name}}"),//coming from server
+			pwd:"{{meeting_pwd}}",//coming from server
+			role:{{meeting_role}},//coming from server
+			email:testTool.b64EncodeUnicode("{{email}}"),//coming from server
+			lang:"{{meeting_lang}}",//coming from server
+			signature:"{{mtg_signature}}",//coming from server
+			apikey:"{{api_key}}",//coming from server
+			china:0//coming from server
+		};
+
+var joinUrl = "meeting.html?" + testTool.serialize(meetingCon);
+		var hrf = document.location.href;
+		var hrfArr = hrf.split('/');
+		var priorUrl = "";
+		for( var x=0; x<hrfArr.length-2; x++){
+			if(x!=0){
+				priorUrl=priorUrl+'/'+hrfArr[x];
+			}
+			else{
+				priorUrl=hrfArr[x];
+			}
+		}
+		priorUrl=priorUrl+'/'+joinUrl;
+    document.getElementsByName('iFrameName')[0].src = priorUrl;
+		});
+	</script>
+	
+	<script type="text/javascript" src="'zoomcdn/js/meeting.js'"></script>
+	
+		
