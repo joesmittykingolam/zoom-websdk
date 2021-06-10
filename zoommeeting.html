@@ -1,4 +1,4 @@
-in my application I have this
+in my django application I have this
 
 	generatedSignature = generateZoomSignature(data)
 
@@ -12,6 +12,7 @@ in my application I have this
 	context_dict['meeting_lang']="en-US" 
 	context_dict['meeting_date']="this contains meeting date obtained"
 	context_dict['email']="myregisteredmail@yahoo.com"
+        response = render(request,'class.html',context_dict)
 	
 	generateZoomSignature(data):
 		ts = int(round(time.time() * 1000))-30000
@@ -27,7 +28,7 @@ in my application I have this
 		
 		return signature.rstrip("=");
 		
-in my html I have this
+in my class.html I have this
 
 	
 	<script src="https://source.zoom.us/1.9.5/lib/vendor/react.min.js"></script>
